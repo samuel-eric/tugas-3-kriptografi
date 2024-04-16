@@ -25,6 +25,7 @@ function reducer(state, action) {
 			const chatObj = chat.filter((c) => c.id === action.data.id)[0];
 			chatObj.decrypted = action.data.decrypted;
 			chat = [...chat.filter((c) => c.id !== action.data.id), chatObj];
+			chat.sort((a, b) => a.id - b.id);
 			return { ...state, chat };
 		}
 	}
