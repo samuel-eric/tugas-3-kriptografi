@@ -1,5 +1,12 @@
 import React from 'react';
 
+function bytesToBase64(bytes) {
+	const binString = Array.from(bytes, (byte) =>
+		String.fromCodePoint(byte)
+	).join('');
+	return btoa(binString);
+}
+
 const ChatBubble = ({ left, encrypted, decrypted, id, handleDecryption }) => {
 	return (
 		<div
@@ -14,7 +21,7 @@ const ChatBubble = ({ left, encrypted, decrypted, id, handleDecryption }) => {
 						: 'rounded-bl-2xl bg-slate-800 text-zinc-200'
 				}`}
 			>
-				{btoa(encrypted)}
+				{bytesToBase64(new TextEncoder().encode(encrypted))}
 				{left && (
 					<div className='mt-2'>
 						<hr />
