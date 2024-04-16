@@ -15,7 +15,7 @@ const ChatBubble = ({ left, encrypted, decrypted, id, handleDecryption }) => {
 			}`}
 		>
 			<div
-				className={`py-3 px-5 rounded-tl-2xl rounded-tr-2xl max-w-xl ${
+				className={`py-3 px-5 rounded-tl-2xl rounded-tr-2xl ${
 					left
 						? 'rounded-br-2xl bg-slate-50 text-zinc-800'
 						: 'rounded-bl-2xl bg-slate-800 text-zinc-200'

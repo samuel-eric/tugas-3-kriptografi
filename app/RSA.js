@@ -24,8 +24,13 @@ class RSA {
 
 	#generateE() {
 		let e = Math.floor(Math.random() * 100);
-		while (!isCoprime(e, this.#n_symbol) || e === 1) {
-			e = Math.floor(Math.random() * 100);
+		let repeat = true;
+		while (repeat) {
+			if (e !== 1 && isCoprime(e, this.#n_symbol)) {
+				repeat = false;
+			} else {
+				e = Math.floor(Math.random() * 100);
+			}
 		}
 		this.e = BigInt(e);
 	}
