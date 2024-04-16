@@ -8,33 +8,55 @@ import Chat from './Chat';
 const ChatWindow = ({ name, state, dispatch }) => {
 	const { aliceRSA, bobRSA, chat } = state;
 	const [input, setInput] = useState('');
+	const [rsaObj, setRsaObj] = useState();
 
 	const handleGenerateKey = () => {
 		const { p, q } = RSA.generatePAndQ();
 		console.log('p', p);
 		console.log('q', q);
-		const rsaObj = new RSA(p, q);
+		const tempRsaObj = new RSA(p, q);
+		setRsaObj(tempRsaObj);
 		if (name === 'Alice') {
-			dispatch({ type: 'setAliceRSA', data: rsaObj });
-			console.log('Alice public key: ', rsaObj.getPublicKey());
-			console.log('Alice private key: ', rsaObj.getPrivateKey());
+			dispatch({ type: 'setAliceRSA', data: tempRsaObj });
+			console.log('Alice public key: ', tempRsaObj.getPublicKey());
+			console.log('Alice private key: ', tempRsaObj.getPrivateKey());
 		} else if (name === 'Bob') {
-			dispatch({ type: 'setBobRSA', data: rsaObj });
-			console.log('Bob public key: ', rsaObj.getPublicKey());
-			console.log('Bob private key: ', rsaObj.getPrivateKey());
+			dispatch({ type: 'setBobRSA', data: tempRsaObj });
+			console.log('Bob public key: ', tempRsaObj.getPublicKey());
+			console.log('Bob private key: ', tempRsaObj.getPrivateKey());
 		}
 	};
 
 	const handleSend = () => {
+		const encryptedInput = rsaObj.doEncryption(input);
 		dispatch({
 			type: 'sendChat',
 			data: {
 				person: name === 'Alice' ? 'A' : 'B',
-				text: input,
+				encrypted: encryptedInput,
+				decrypted: '',
 				id: chat.length === 0 ? 1 : chat[chat.length - 1].id + 1,
 			},
 		});
 		setInput('');
+	};
+
+	const handleDecryption = (text, id) => {
+		const decrypted =
+			name === 'Alice'
+				? bobRSA.doDecryption(text)
+				: aliceRSA.doDecryption(text);
+		dispatch({
+			type: 'decrypt',
+			data: {
+				decrypted: decrypted,
+				id: id,
+			},
+		});
+	};
+
+	const handleSendKey = () => {
+		console.log('key sent');
 	};
 
 	const checkKey = () => {
@@ -58,12 +80,18 @@ const ChatWindow = ({ name, state, dispatch }) => {
 				>
 					Generate Key
 				</button>
-				<button className='bg-slate-300 px-5 py-3 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition'>
+				<button
+					className='bg-slate-300 px-5 py-3 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition disabled:opacity-75'
+					onClick={handleSendKey}
+					disabled={!checkKey()}
+				>
 					Send Public Key
 				</button>
 			</section>
 			<section className='flex-1 overflow-scroll p-4'>
-				{chat.length > 0 && <Chat name={name} chat={chat} />}
+				{chat.length > 0 && (
+					<Chat name={name} chat={chat} handleDecryption={handleDecryption} />
+				)}
 			</section>
 			<section className='bg-slate-600 w-full h-[8%] grid place-items-center'>
 				<div className='flex w-5/6 gap-2'>

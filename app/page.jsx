@@ -20,11 +20,20 @@ function reducer(state, action) {
 		case 'sendChat': {
 			return { ...state, chat: [...state.chat, action.data] };
 		}
+		case 'decrypt': {
+			let chat = state.chat;
+			const chatObj = chat.filter((c) => c.id === action.data.id)[0];
+			chatObj.decrypted = action.data.decrypted;
+			chat = [...chat.filter((c) => c.id !== action.data.id), chatObj];
+			return { ...state, chat };
+		}
 	}
 }
 
 export default function Home() {
 	const [state, dispatch] = useReducer(reducer, initialState);
+
+	console.log('chat: ', state.chat);
 
 	return (
 		<main className='w-screen h-screen flex p-3 gap-2'>

@@ -63,6 +63,7 @@ class RSA {
 		console.log('input ciphertext: ', input);
 		const plainArr = input.map((char) => char ** this.d % this.n);
 		console.log('plain array hasil decryption: ', plainArr);
+		console.log(String.fromCharCode(...plainArr.map((plain) => Number(plain))));
 		return String.fromCharCode(...plainArr.map((plain) => Number(plain)));
 	}
 }

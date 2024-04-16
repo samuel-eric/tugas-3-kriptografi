@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ChatBubble = ({ left, text }) => {
+const ChatBubble = ({ left, encrypted, decrypted, id, handleDecryption }) => {
 	return (
 		<div
 			className={`w-full flex items-center my-6 ${
@@ -14,7 +14,22 @@ const ChatBubble = ({ left, text }) => {
 						: 'rounded-bl-2xl bg-slate-800 text-zinc-200'
 				}`}
 			>
-				{text}
+				{encrypted}
+				{left && (
+					<div className='mt-2'>
+						<hr />
+						{decrypted === '' ? (
+							<button
+								onClick={() => handleDecryption(encrypted, id)}
+								className='p-1 mt-2 text-center rounded-md bg-slate-700 text-zinc-100'
+							>
+								Decrypt
+							</button>
+						) : (
+							<div className='mt-2'>{decrypted}</div>
+						)}
+					</div>
+				)}
 			</div>
 		</div>
 	);
