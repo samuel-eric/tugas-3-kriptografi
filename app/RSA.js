@@ -1,4 +1,4 @@
-import { isCoprime } from '@sigma-js/primes';
+import { isCoprime, isPrime } from '@sigma-js/primes';
 
 class RSA {
 	#n_symbol;
@@ -10,9 +10,21 @@ class RSA {
 		this.#n_symbol = (p - 1) * (q - 1);
 	}
 
+	static generatePAndQ() {
+		let p = Math.floor(Math.random() * 100);
+		while (p < 10 || !isPrime(p)) {
+			p = Math.floor(Math.random() * 100);
+		}
+		let q = Math.floor(Math.random() * 100);
+		while (q < 10 || !isPrime(q) || q === p) {
+			q = Math.floor(Math.random() * 100);
+		}
+		return { p, q };
+	}
+
 	#generateE() {
 		let e = Math.floor(Math.random() * 100);
-		while (!isCoprime(e, this.#n_symbol)) {
+		while (!isCoprime(e, this.#n_symbol) || e === 1) {
 			e = Math.floor(Math.random() * 100);
 		}
 		this.e = BigInt(e);
@@ -54,3 +66,5 @@ class RSA {
 		return String.fromCharCode(...plainArr.map((plain) => Number(plain)));
 	}
 }
+
+export default RSA;
