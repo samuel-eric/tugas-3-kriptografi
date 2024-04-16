@@ -14,7 +14,7 @@ const ChatBubble = ({ left, encrypted, decrypted, id, handleDecryption }) => {
 						: 'rounded-bl-2xl bg-slate-800 text-zinc-200'
 				}`}
 			>
-				{encrypted}
+				{btoa(encrypted)}
 				{left && (
 					<div className='mt-2'>
 						<hr />
