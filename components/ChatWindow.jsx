@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { IoSend } from 'react-icons/io5';
-import RSA from './RSA';
+import RSA from '../utils/RSA';
 import Chat from './Chat';
 
 const ChatWindow = ({ name, state, dispatch }) => {
 	const { aliceRSA, bobRSA, chat } = state;
 	const [input, setInput] = useState('');
 	const [rsaObj, setRsaObj] = useState();
+	const [sendPublicKey, setSendPublicKey] = useState(false);
+	const [uploadedFileName, setUploadedFileName] = useState('');
 
 	const handleGenerateKey = () => {
 		const { p, q } = RSA.generatePAndQ();
@@ -59,6 +61,28 @@ const ChatWindow = ({ name, state, dispatch }) => {
 		console.log('key sent');
 	};
 
+	const handleUploadFile = async (e) => {
+		console.log('upload file: ', e.target.files);
+		const file = e.target.files[0];
+		const formData = new FormData();
+		formData.append('file', file);
+		try {
+			const res = await fetch('/api/upload', {
+				method: 'POST',
+				body: formData,
+			});
+			if (!res.ok) {
+				console.error('Something went wrong...');
+				return;
+			}
+			const { fileName } = await res.json();
+			setUploadedFileName(fileName);
+			console.log('filename: ', fileName);
+		} catch (error) {
+			console.error('something went wrong...');
+		}
+	};
+
 	const checkKey = () => {
 		if (name === 'Alice') {
 			return aliceRSA !== null;
@@ -95,6 +119,21 @@ const ChatWindow = ({ name, state, dispatch }) => {
 			</section>
 			<section className='bg-slate-600 w-full h-[8%] grid place-items-center'>
 				<div className='flex w-5/6 gap-2'>
+					<label
+						className={`flex justify-center items-center bg-slate-300 px-5 text-gray-700 rounded-lg ${
+							aliceRSA === null || bobRSA === null
+								? 'opacity-75'
+								: 'cursor-pointer'
+						}`}
+					>
+						<input
+							type='file'
+							className='hidden'
+							onChange={handleUploadFile}
+							disabled={aliceRSA === null || bobRSA === null}
+						/>
+						<b>Upload File</b>
+					</label>
 					<input
 						type='text'
 						className='flex-1 p-3 text-gray-950 text-lg rounded-lg'

@@ -1,7 +1,7 @@
 'use client';
 
 import { useReducer } from 'react';
-import ChatWindow from './ChatWindow';
+import ChatWindow from '../components/ChatWindow';
 
 const initialState = {
 	aliceRSA: null,
