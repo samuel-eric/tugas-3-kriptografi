@@ -7,7 +7,14 @@ function bytesToBase64(bytes) {
 	return btoa(binString);
 }
 
-const ChatBubble = ({ left, encrypted, decrypted, id, handleDecryption }) => {
+const ChatBubble = ({
+	left,
+	encrypted,
+	decrypted,
+	id,
+	handleDecryption,
+	publicKey,
+}) => {
 	return (
 		<div
 			className={`w-full flex items-center my-6 ${
@@ -21,8 +28,10 @@ const ChatBubble = ({ left, encrypted, decrypted, id, handleDecryption }) => {
 						: 'rounded-bl-2xl bg-slate-800 text-zinc-200'
 				}`}
 			>
-				{bytesToBase64(new TextEncoder().encode(encrypted))}
-				{left && (
+				{publicKey
+					? `The public key is e = ${publicKey.e} and n = ${publicKey.n}`
+					: bytesToBase64(new TextEncoder().encode(encrypted))}
+				{publicKey === undefined && left && (
 					<div className='mt-2'>
 						<hr />
 						{decrypted === '' ? (

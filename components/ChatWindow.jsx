@@ -35,8 +35,11 @@ const ChatWindow = ({ name, state, dispatch }) => {
 			type: 'sendChat',
 			data: {
 				person: name === 'Alice' ? 'A' : 'B',
-				encrypted: encryptedInput,
-				decrypted: '',
+				data: {
+					encrypted: encryptedInput,
+					decrypted: '',
+				},
+				isKey: false,
 				id: chat.length === 0 ? 1 : chat[chat.length - 1].id + 1,
 			},
 		});
@@ -59,6 +62,18 @@ const ChatWindow = ({ name, state, dispatch }) => {
 
 	const handleSendKey = () => {
 		console.log('key sent');
+		dispatch({
+			type: 'sendChat',
+			data: {
+				person: name === 'Alice' ? 'A' : 'B',
+				data: {
+					publicKey: rsaObj.getPublicKey(),
+				},
+				isKey: true,
+				id: chat.length === 0 ? 1 : chat[chat.length - 1].id + 1,
+			},
+		});
+		setSendPublicKey(true);
 	};
 
 	const handleUploadFile = async (e) => {
@@ -121,16 +136,14 @@ const ChatWindow = ({ name, state, dispatch }) => {
 				<div className='flex w-5/6 gap-2'>
 					<label
 						className={`flex justify-center items-center bg-slate-300 px-5 text-gray-700 rounded-lg ${
-							aliceRSA === null || bobRSA === null
-								? 'opacity-75'
-								: 'cursor-pointer'
+							!sendPublicKey ? 'opacity-75' : 'cursor-pointer'
 						}`}
 					>
 						<input
 							type='file'
 							className='hidden'
 							onChange={handleUploadFile}
-							disabled={aliceRSA === null || bobRSA === null}
+							disabled={!sendPublicKey}
 						/>
 						<b>Upload File</b>
 					</label>
@@ -139,11 +152,11 @@ const ChatWindow = ({ name, state, dispatch }) => {
 						className='flex-1 p-3 text-gray-950 text-lg rounded-lg'
 						onChange={(e) => setInput(e.target.value)}
 						value={input}
-						disabled={aliceRSA === null || bobRSA === null}
+						disabled={!sendPublicKey}
 					/>
 					<button
 						className='flex justify-center items-center gap-2 bg-slate-300 px-5 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition disabled:opacity-75'
-						disabled={aliceRSA === null || bobRSA === null}
+						disabled={!sendPublicKey}
 						onClick={handleSend}
 					>
 						<b>Send</b> <IoSend className='inline' />

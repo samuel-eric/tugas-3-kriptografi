@@ -5,24 +5,26 @@ const Chat = ({ name, chat, handleDecryption }) => {
 	if (name === 'Alice') {
 		return (
 			<>
-				{chat.map(({ person, encrypted, decrypted, id }) =>
+				{chat.map(({ person, data, id }) =>
 					person === 'A' ? (
 						<ChatBubble
 							left={false}
-							encrypted={encrypted}
+							encrypted={data?.encrypted}
 							key={id}
 							id={id}
 							handleDecryption={handleDecryption}
-							decrypted={decrypted}
+							decrypted={data?.decrypted}
+							publicKey={data?.publicKey}
 						/>
 					) : (
 						<ChatBubble
 							left={true}
-							encrypted={encrypted}
+							encrypted={data?.encrypted}
 							key={id}
 							id={id}
 							handleDecryption={handleDecryption}
-							decrypted={decrypted}
+							decrypted={data?.decrypted}
+							publicKey={data?.publicKey}
 						/>
 					)
 				)}
@@ -31,24 +33,26 @@ const Chat = ({ name, chat, handleDecryption }) => {
 	} else if (name === 'Bob') {
 		return (
 			<>
-				{chat.map(({ person, encrypted, decrypted, id }) =>
+				{chat.map(({ person, data, id }) =>
 					person === 'A' ? (
 						<ChatBubble
 							left={true}
-							encrypted={encrypted}
+							encrypted={data?.encrypted}
 							key={id}
 							id={id}
 							handleDecryption={handleDecryption}
-							decrypted={decrypted}
+							decrypted={data?.decrypted}
+							publicKey={data?.publicKey}
 						/>
 					) : (
 						<ChatBubble
 							left={false}
-							encrypted={encrypted}
+							encrypted={data?.encrypted}
 							key={id}
 							id={id}
 							handleDecryption={handleDecryption}
-							decrypted={decrypted}
+							decrypted={data?.decrypted}
+							publicKey={data?.publicKey}
 						/>
 					)
 				)}

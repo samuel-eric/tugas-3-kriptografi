@@ -46,29 +46,24 @@ class RSA {
 	}
 
 	getPublicKey() {
-		this.#generateE();
+		if (!this.e) this.#generateE();
 		return { e: this.e, n: this.n };
 	}
 
 	getPrivateKey() {
-		this.#generateD();
+		if (!this.d) this.#generateD();
 		return { d: this.d, n: this.n };
 	}
 
 	doEncryption(plaintext) {
 		let input = plaintext.split('').map((char) => BigInt(char.charCodeAt(0)));
-		console.log('plaintext: ', input);
 		const cipherArr = input.map((char) => char ** this.e % this.n);
-		console.log('cipherArr: ', cipherArr);
 		return String.fromCharCode(...cipherArr.map((cipher) => Number(cipher)));
 	}
 
 	doDecryption(ciphertext) {
 		let input = ciphertext.split('').map((char) => BigInt(char.charCodeAt(0)));
-		console.log('input ciphertext: ', input);
 		const plainArr = input.map((char) => char ** this.d % this.n);
-		console.log('plain array hasil decryption: ', plainArr);
-		console.log(String.fromCharCode(...plainArr.map((plain) => Number(plain))));
 		return String.fromCharCode(...plainArr.map((plain) => Number(plain)));
 	}
 }
