@@ -21,16 +21,22 @@ const ChatBubble = ({
 						: 'rounded-bl-2xl bg-slate-800 text-zinc-200'
 				}`}
 			>
-				{publicKey
-					? `The public key is e = ${publicKey.e} and n = ${publicKey.n}`
-					: encrypted}
+				{publicKey ? (
+					`The public key is e = ${publicKey.e} and n = ${publicKey.n}`
+				) : encrypted.includes('encrypted-') ? (
+					<a href={`/assets/${encrypted}`} download className='underline'>
+						Click here to download encrypted file
+					</a>
+				) : (
+					encrypted
+				)}
 				{publicKey === undefined && left && (
 					<div className='mt-2'>
 						<hr />
 						{decrypted === '' ? (
 							<button
 								onClick={() => handleDecryption(encrypted, id)}
-								className='p-1 mt-2 text-center rounded-md bg-slate-700 text-zinc-100'
+								className='py-1 px-3 mt-2 text-center rounded-md bg-slate-700 text-zinc-100'
 							>
 								Decrypt
 							</button>

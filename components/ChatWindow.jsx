@@ -101,6 +101,18 @@ const ChatWindow = ({ name, state, dispatch }) => {
 			const { fileName } = await res.json();
 			setUploadedFileName(fileName);
 			console.log('filename: ', fileName);
+			dispatch({
+				type: 'sendChat',
+				data: {
+					person: name === 'Alice' ? 'A' : 'B',
+					data: {
+						encrypted: `encrypted-${fileName}`,
+						decrypted: '',
+					},
+					isKey: false,
+					id: chat.length === 0 ? 1 : chat[chat.length - 1].id + 1,
+				},
+			});
 		} catch (error) {
 			console.error('something went wrong...');
 		}
