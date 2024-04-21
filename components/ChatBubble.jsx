@@ -40,6 +40,10 @@ const ChatBubble = ({
 							>
 								Decrypt
 							</button>
+						) : encrypted.includes('encrypted-') ? (
+							<a href={`/assets/${decrypted}`} download className='underline'>
+								Click here to download decrypted file
+							</a>
 						) : (
 							<div className='mt-2'>{decrypted}</div>
 						)}

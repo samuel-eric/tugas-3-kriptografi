@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { IoSend } from 'react-icons/io5';
 import RSA from '../utils/RSA';
 import Chat from './Chat';
-import { readFileAsBase64, createFile } from '@/utils/handleFile';
+import { convertFileToDataURL, createFile, readFile } from '@/utils/handleFile';
 
 const ChatWindow = ({ name, state, dispatch }) => {
 	const { aliceRSA, bobRSA, chat } = state;
 	const [input, setInput] = useState('');
 	const [rsaObj, setRsaObj] = useState();
 	const [sendPublicKey, setSendPublicKey] = useState(false);
-	const [uploadedFileName, setUploadedFileName] = useState('');
 
 	const handleGenerateKey = () => {
 		const { p, q } = RSA.generatePAndQ();
@@ -47,18 +46,57 @@ const ChatWindow = ({ name, state, dispatch }) => {
 		setInput('');
 	};
 
-	const handleDecryption = (text, id) => {
-		const decrypted =
-			name === 'Alice'
-				? bobRSA.doDecryption(text)
-				: aliceRSA.doDecryption(text);
-		dispatch({
-			type: 'decrypt',
-			data: {
-				decrypted: decrypted,
-				id: id,
-			},
-		});
+	const handleDecryption = async (text, id) => {
+		let input = text;
+		if (text.includes('encrypted-')) {
+			console.log(text);
+			const file = await readFile(text);
+			console.log(file.content);
+			const decrypted =
+				name === 'Alice'
+					? bobRSA.doDecryption(true, file.content)
+					: aliceRSA.doDecryption(true, file.content);
+			const dataURL = `data:${file.type};base64,${decrypted}`;
+			console.log(dataURL);
+			const decryptedFileName = `decrypted-${text.substring(10)}`;
+			const decryptedFile = createFile(dataURL, decryptedFileName);
+
+			const formData = new FormData();
+			formData.append('file', decryptedFile);
+			try {
+				const res = await fetch('/api/upload', {
+					method: 'POST',
+					body: formData,
+				});
+				if (!res.ok) {
+					console.error('Something went wrong...');
+					return;
+				}
+				const { fileName } = await res.json();
+				console.log('filename: ', fileName);
+				dispatch({
+					type: 'decrypt',
+					data: {
+						decrypted: decryptedFileName,
+						id: id,
+					},
+				});
+			} catch (error) {
+				console.error('something went wrong...');
+			}
+		} else {
+			const decrypted =
+				name === 'Alice'
+					? bobRSA.doDecryption(false, input)
+					: aliceRSA.doDecryption(false, input);
+			dispatch({
+				type: 'decrypt',
+				data: {
+					decrypted: decrypted,
+					id: id,
+				},
+			});
+		}
 	};
 
 	const handleSendKey = () => {
@@ -80,12 +118,15 @@ const ChatWindow = ({ name, state, dispatch }) => {
 	const handleUploadFile = async (e) => {
 		console.log('upload file: ', e.target.files[0]);
 		const file = e.target.files[0];
-		const fileContent = await readFileAsBase64(file);
+		const fileContent = await convertFileToDataURL(file);
 
 		const encryptedFileContent = `${
 			fileContent.split(',')[0]
 		},${rsaObj.doEncryption(fileContent.split(',')[1])}`;
-		const encryptedFile = createFile(encryptedFileContent, file.name);
+		const encryptedFile = createFile(
+			encryptedFileContent,
+			`encrypted-${file.name}`
+		);
 
 		const formData = new FormData();
 		formData.append('file', encryptedFile);
@@ -99,14 +140,13 @@ const ChatWindow = ({ name, state, dispatch }) => {
 				return;
 			}
 			const { fileName } = await res.json();
-			setUploadedFileName(fileName);
 			console.log('filename: ', fileName);
 			dispatch({
 				type: 'sendChat',
 				data: {
 					person: name === 'Alice' ? 'A' : 'B',
 					data: {
-						encrypted: `encrypted-${fileName}`,
+						encrypted: fileName,
 						decrypted: '',
 					},
 					isKey: false,

@@ -76,11 +76,17 @@ class RSA {
 		return this.#bytesToBase64(new TextEncoder().encode(ciphertext));
 	}
 
-	doDecryption(ciphertext) {
+	doDecryption(isFile, ciphertext) {
 		let input = new TextDecoder().decode(this.#base64ToBytes(ciphertext));
+		console.log('input: ', input);
 		input = input.split('').map((char) => BigInt(char.charCodeAt(0)));
 		const plainArr = input.map((char) => char ** this.d % this.n);
-		return String.fromCharCode(...plainArr.map((plain) => Number(plain)));
+		const plaintext = String.fromCharCode(
+			...plainArr.map((plain) => Number(plain))
+		);
+		return isFile
+			? this.#bytesToBase64(new TextEncoder().encode(plaintext))
+			: plaintext;
 	}
 }
 

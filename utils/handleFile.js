@@ -1,4 +1,4 @@
-function readFileAsBase64(file) {
+function convertFileToDataURL(file) {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.readAsDataURL(file);
@@ -6,6 +6,7 @@ function readFileAsBase64(file) {
 		reader.onerror = reject;
 	});
 }
+
 function createFile(dataURL, filename) {
 	var arr = dataURL.split(','),
 		mime = arr[0].match(/:(.*?);/)[1],
@@ -20,4 +21,12 @@ function createFile(dataURL, filename) {
 	return new File([u8arr], filename, { type: mime });
 }
 
-export { readFileAsBase64, createFile };
+async function readFile(filename) {
+	const res = await fetch(`/api/download/${filename}`);
+	if (res.ok) {
+		const data = await res.json();
+		return { content: data.fileContent, type: data.type };
+	}
+}
+
+export { convertFileToDataURL, createFile, readFile };
