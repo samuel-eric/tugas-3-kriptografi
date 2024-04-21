@@ -1,12 +1,5 @@
 import React from 'react';
 
-function bytesToBase64(bytes) {
-	const binString = Array.from(bytes, (byte) =>
-		String.fromCodePoint(byte)
-	).join('');
-	return btoa(binString);
-}
-
 const ChatBubble = ({
 	left,
 	encrypted,
@@ -30,7 +23,7 @@ const ChatBubble = ({
 			>
 				{publicKey
 					? `The public key is e = ${publicKey.e} and n = ${publicKey.n}`
-					: bytesToBase64(new TextEncoder().encode(encrypted))}
+					: encrypted}
 				{publicKey === undefined && left && (
 					<div className='mt-2'>
 						<hr />

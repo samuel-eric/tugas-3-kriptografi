@@ -55,14 +55,30 @@ class RSA {
 		return { d: this.d, n: this.n };
 	}
 
+	#bytesToBase64(bytes) {
+		const binString = Array.from(bytes, (byte) =>
+			String.fromCodePoint(byte)
+		).join('');
+		return btoa(binString);
+	}
+
+	#base64ToBytes(base64) {
+		const binString = atob(base64);
+		return Uint8Array.from(binString, (m) => m.codePointAt(0));
+	}
+
 	doEncryption(plaintext) {
 		let input = plaintext.split('').map((char) => BigInt(char.charCodeAt(0)));
 		const cipherArr = input.map((char) => char ** this.e % this.n);
-		return String.fromCharCode(...cipherArr.map((cipher) => Number(cipher)));
+		const ciphertext = String.fromCharCode(
+			...cipherArr.map((cipher) => Number(cipher))
+		);
+		return this.#bytesToBase64(new TextEncoder().encode(ciphertext));
 	}
 
 	doDecryption(ciphertext) {
-		let input = ciphertext.split('').map((char) => BigInt(char.charCodeAt(0)));
+		let input = new TextDecoder().decode(this.#base64ToBytes(ciphertext));
+		input = input.split('').map((char) => BigInt(char.charCodeAt(0)));
 		const plainArr = input.map((char) => char ** this.d % this.n);
 		return String.fromCharCode(...plainArr.map((plain) => Number(plain)));
 	}

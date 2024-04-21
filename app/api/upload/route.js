@@ -15,7 +15,7 @@ export const POST = async (req, res) => {
 	console.log(filename);
 	try {
 		await writeFile(
-			path.join(process.cwd(), 'public/assets/' + filename),
+			path.join(process.cwd(), 'public/assets/encrypted-' + filename),
 			buffer
 		);
 		return NextResponse.json({

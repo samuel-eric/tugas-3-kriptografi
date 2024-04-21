@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { IoSend } from 'react-icons/io5';
 import RSA from '../utils/RSA';
 import Chat from './Chat';
+import { readFileAsBase64, createFile } from '@/utils/handleFile';
 
 const ChatWindow = ({ name, state, dispatch }) => {
 	const { aliceRSA, bobRSA, chat } = state;
@@ -77,10 +78,17 @@ const ChatWindow = ({ name, state, dispatch }) => {
 	};
 
 	const handleUploadFile = async (e) => {
-		console.log('upload file: ', e.target.files);
+		console.log('upload file: ', e.target.files[0]);
 		const file = e.target.files[0];
+		const fileContent = await readFileAsBase64(file);
+
+		const encryptedFileContent = `${
+			fileContent.split(',')[0]
+		},${rsaObj.doEncryption(fileContent.split(',')[1])}`;
+		const encryptedFile = createFile(encryptedFileContent, file.name);
+
 		const formData = new FormData();
-		formData.append('file', file);
+		formData.append('file', encryptedFile);
 		try {
 			const res = await fetch('/api/upload', {
 				method: 'POST',
