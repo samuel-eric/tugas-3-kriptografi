@@ -17,8 +17,6 @@ const ChatWindow = ({ name, state, dispatch }) => {
 
 	const handleGenerateKey = () => {
 		const { p, q } = RSA.generatePAndQ();
-		console.log('p', p);
-		console.log('q', q);
 		const tempRsaObj = new RSA(p, q);
 		setRsaObj(tempRsaObj);
 		setHasGenerateKey(true);
@@ -47,9 +45,6 @@ const ChatWindow = ({ name, state, dispatch }) => {
 			name === 'Alice'
 				? bobRSA.doEncryption(input)
 				: aliceRSA.doEncryption(input);
-		console.log(
-			`encryption using ${name === 'Alice' ? 'Bob' : 'Alice'} public key`
-		);
 		dispatch({
 			type: 'sendChat',
 			data: {
@@ -68,15 +63,12 @@ const ChatWindow = ({ name, state, dispatch }) => {
 	const handleDecryption = async (text, id) => {
 		let input = text;
 		if (text.includes('encrypted-')) {
-			console.log(text);
 			const file = await readFile(text);
-			console.log(file.content);
 			const decrypted =
 				name === 'Alice'
 					? aliceRSA.doDecryption(file.content)
 					: bobRSA.doDecryption(file.content);
 			const dataURL = `data:${file.type};base64,${decrypted}`;
-			console.log(dataURL);
 			const decryptedFileName = `decrypted-${text.substring(10)}`;
 			const decryptedFile = createFile(dataURL, decryptedFileName);
 
@@ -92,7 +84,6 @@ const ChatWindow = ({ name, state, dispatch }) => {
 					return;
 				}
 				const { fileName } = await res.json();
-				console.log('filename: ', fileName);
 				dispatch({
 					type: 'decrypt',
 					data: {
@@ -121,12 +112,8 @@ const ChatWindow = ({ name, state, dispatch }) => {
 	const handleSendKey = () => {
 		if (name === 'Alice') {
 			dispatch({ type: 'setAliceRSA', data: rsaObj });
-			console.log('Alice public key: ', rsaObj.getPublicKey());
-			console.log('Alice private key: ', rsaObj.getPrivateKey());
 		} else if (name === 'Bob') {
 			dispatch({ type: 'setBobRSA', data: rsaObj });
-			console.log('Bob public key: ', rsaObj.getPublicKey());
-			console.log('Bob private key: ', rsaObj.getPrivateKey());
 		}
 		dispatch({
 			type: 'sendChat',
@@ -143,7 +130,6 @@ const ChatWindow = ({ name, state, dispatch }) => {
 	};
 
 	const handleUploadFile = async (e) => {
-		console.log('upload file: ', e.target.files[0]);
 		const file = e.target.files[0];
 		const fileContent = await convertFileToDataURL(file);
 
@@ -169,7 +155,6 @@ const ChatWindow = ({ name, state, dispatch }) => {
 				return;
 			}
 			const { fileName } = await res.json();
-			console.log('filename: ', fileName);
 			dispatch({
 				type: 'sendChat',
 				data: {

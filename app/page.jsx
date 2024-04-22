@@ -33,7 +33,6 @@ function reducer(state, action) {
 
 export default function Home() {
 	const [state, dispatch] = useReducer(reducer, initialState);
-	console.log('chat: ', state.chat);
 	return (
 		<main className='w-screen h-screen flex p-3 gap-2'>
 			<ChatWindow name={'Alice'} state={state} dispatch={dispatch} />
