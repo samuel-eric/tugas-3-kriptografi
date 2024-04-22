@@ -12,6 +12,8 @@ const ChatWindow = ({ name, state, dispatch }) => {
 	const [rsaObj, setRsaObj] = useState();
 	const [sendPublicKey, setSendPublicKey] = useState(false);
 	const [hasGenerateKey, setHasGenerateKey] = useState(false);
+	const [linkPrivateKey, setLinkPrivateKey] = useState('');
+	const [linkPublicKey, setLinkPublicKey] = useState('');
 
 	const handleGenerateKey = () => {
 		const { p, q } = RSA.generatePAndQ();
@@ -20,6 +22,24 @@ const ChatWindow = ({ name, state, dispatch }) => {
 		const tempRsaObj = new RSA(p, q);
 		setRsaObj(tempRsaObj);
 		setHasGenerateKey(true);
+		preparePublicPrivateKeyFile(tempRsaObj);
+	};
+
+	const preparePublicPrivateKeyFile = (rsa) => {
+		const publicKey = rsa.getPublicKey();
+		const privateKey = rsa.getPrivateKey();
+
+		const dataURLPublic = `data:text/plain;base64,${btoa(
+			`e=${publicKey.e};n=${publicKey.n}`
+		)}`;
+		const publicKeyFile = createFile(dataURLPublic, '*.pub');
+		setLinkPublicKey(URL.createObjectURL(publicKeyFile));
+
+		const dataURLPrivate = `data:text/plain;base64,${btoa(
+			`e=${privateKey.d};n=${privateKey.n}`
+		)}`;
+		const privateKeyFile = createFile(dataURLPrivate, '*.priv');
+		setLinkPrivateKey(URL.createObjectURL(privateKeyFile));
 	};
 
 	const handleSend = () => {
@@ -180,7 +200,7 @@ const ChatWindow = ({ name, state, dispatch }) => {
 			<header className='w-full h-[8%] p-3 bg-slate-600 grid place-items-center'>
 				<h1 className='text-3xl'>{name}</h1>
 			</header>
-			<section className='flex justify-center items-center gap-7 h-[8%] bg-slate-500'>
+			<section className='flex justify-center items-center gap-7 h-[8%] bg-slate-500 py-3'>
 				<button
 					className='bg-slate-300 px-5 py-3 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition disabled:opacity-75'
 					onClick={handleGenerateKey}
@@ -195,6 +215,24 @@ const ChatWindow = ({ name, state, dispatch }) => {
 				>
 					Send Public Key
 				</button>
+				{hasGenerateKey && (
+					<>
+						<a
+							className='block bg-slate-300 px-5 py-3 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition disabled:opacity-75'
+							href={linkPublicKey}
+							download
+						>
+							Download Public Key
+						</a>
+						<a
+							className='block bg-slate-300 px-5 py-3 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition disabled:opacity-75'
+							href={linkPrivateKey}
+							download
+						>
+							Download Private Key
+						</a>
+					</>
+				)}
 			</section>
 			<section className='flex-1 overflow-scroll p-4'>
 				{chat.length > 0 && (
