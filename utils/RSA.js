@@ -26,7 +26,7 @@ class RSA {
 		let e = Math.floor(Math.random() * 100);
 		let repeat = true;
 		while (repeat) {
-			if (e !== 1 && isCoprime(e, this.#n_symbol)) {
+			if (e > 1 && isCoprime(e, this.#n_symbol)) {
 				repeat = false;
 			} else {
 				e = Math.floor(Math.random() * 100);
@@ -76,17 +76,14 @@ class RSA {
 		return this.#bytesToBase64(new TextEncoder().encode(ciphertext));
 	}
 
-	doDecryption(isFile, ciphertext) {
+	doDecryption(ciphertext) {
 		let input = new TextDecoder().decode(this.#base64ToBytes(ciphertext));
-		console.log('input: ', input);
 		input = input.split('').map((char) => BigInt(char.charCodeAt(0)));
 		const plainArr = input.map((char) => char ** this.d % this.n);
 		const plaintext = String.fromCharCode(
 			...plainArr.map((plain) => Number(plain))
 		);
-		return isFile
-			? this.#bytesToBase64(new TextEncoder().encode(plaintext))
-			: plaintext;
+		return plaintext;
 	}
 }
 

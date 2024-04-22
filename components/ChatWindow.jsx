@@ -11,6 +11,7 @@ const ChatWindow = ({ name, state, dispatch }) => {
 	const [input, setInput] = useState('');
 	const [rsaObj, setRsaObj] = useState();
 	const [sendPublicKey, setSendPublicKey] = useState(false);
+	const [hasGenerateKey, setHasGenerateKey] = useState(false);
 
 	const handleGenerateKey = () => {
 		const { p, q } = RSA.generatePAndQ();
@@ -18,19 +19,17 @@ const ChatWindow = ({ name, state, dispatch }) => {
 		console.log('q', q);
 		const tempRsaObj = new RSA(p, q);
 		setRsaObj(tempRsaObj);
-		if (name === 'Alice') {
-			dispatch({ type: 'setAliceRSA', data: tempRsaObj });
-			console.log('Alice public key: ', tempRsaObj.getPublicKey());
-			console.log('Alice private key: ', tempRsaObj.getPrivateKey());
-		} else if (name === 'Bob') {
-			dispatch({ type: 'setBobRSA', data: tempRsaObj });
-			console.log('Bob public key: ', tempRsaObj.getPublicKey());
-			console.log('Bob private key: ', tempRsaObj.getPrivateKey());
-		}
+		setHasGenerateKey(true);
 	};
 
 	const handleSend = () => {
-		const encryptedInput = rsaObj.doEncryption(input);
+		const encryptedInput =
+			name === 'Alice'
+				? bobRSA.doEncryption(input)
+				: aliceRSA.doEncryption(input);
+		console.log(
+			`encryption using ${name === 'Alice' ? 'Bob' : 'Alice'} public key`
+		);
 		dispatch({
 			type: 'sendChat',
 			data: {
@@ -54,8 +53,8 @@ const ChatWindow = ({ name, state, dispatch }) => {
 			console.log(file.content);
 			const decrypted =
 				name === 'Alice'
-					? bobRSA.doDecryption(true, file.content)
-					: aliceRSA.doDecryption(true, file.content);
+					? aliceRSA.doDecryption(file.content)
+					: bobRSA.doDecryption(file.content);
 			const dataURL = `data:${file.type};base64,${decrypted}`;
 			console.log(dataURL);
 			const decryptedFileName = `decrypted-${text.substring(10)}`;
@@ -87,8 +86,8 @@ const ChatWindow = ({ name, state, dispatch }) => {
 		} else {
 			const decrypted =
 				name === 'Alice'
-					? bobRSA.doDecryption(false, input)
-					: aliceRSA.doDecryption(false, input);
+					? aliceRSA.doDecryption(input)
+					: bobRSA.doDecryption(input);
 			dispatch({
 				type: 'decrypt',
 				data: {
@@ -100,7 +99,15 @@ const ChatWindow = ({ name, state, dispatch }) => {
 	};
 
 	const handleSendKey = () => {
-		console.log('key sent');
+		if (name === 'Alice') {
+			dispatch({ type: 'setAliceRSA', data: rsaObj });
+			console.log('Alice public key: ', rsaObj.getPublicKey());
+			console.log('Alice private key: ', rsaObj.getPrivateKey());
+		} else if (name === 'Bob') {
+			dispatch({ type: 'setBobRSA', data: rsaObj });
+			console.log('Bob public key: ', rsaObj.getPublicKey());
+			console.log('Bob private key: ', rsaObj.getPrivateKey());
+		}
 		dispatch({
 			type: 'sendChat',
 			data: {
@@ -120,9 +127,11 @@ const ChatWindow = ({ name, state, dispatch }) => {
 		const file = e.target.files[0];
 		const fileContent = await convertFileToDataURL(file);
 
-		const encryptedFileContent = `${
-			fileContent.split(',')[0]
-		},${rsaObj.doEncryption(fileContent.split(',')[1])}`;
+		const encryptedFileContent = `${fileContent.split(',')[0]},${
+			name === 'Alice'
+				? bobRSA.doEncryption(fileContent.split(',')[1])
+				: aliceRSA.doEncryption(fileContent.split(',')[1])
+		}`;
 		const encryptedFile = createFile(
 			encryptedFileContent,
 			`encrypted-${file.name}`
@@ -158,11 +167,11 @@ const ChatWindow = ({ name, state, dispatch }) => {
 		}
 	};
 
-	const checkKey = () => {
+	const canStartEncryptDecrypt = () => {
 		if (name === 'Alice') {
-			return aliceRSA !== null;
-		} else if (name === 'Bob') {
 			return bobRSA !== null;
+		} else if (name === 'Bob') {
+			return aliceRSA !== null;
 		}
 	};
 
@@ -175,14 +184,14 @@ const ChatWindow = ({ name, state, dispatch }) => {
 				<button
 					className='bg-slate-300 px-5 py-3 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition disabled:opacity-75'
 					onClick={handleGenerateKey}
-					disabled={checkKey()}
+					disabled={hasGenerateKey}
 				>
 					Generate Key
 				</button>
 				<button
 					className='bg-slate-300 px-5 py-3 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition disabled:opacity-75'
 					onClick={handleSendKey}
-					disabled={!checkKey()}
+					disabled={!hasGenerateKey || sendPublicKey}
 				>
 					Send Public Key
 				</button>
@@ -196,14 +205,14 @@ const ChatWindow = ({ name, state, dispatch }) => {
 				<div className='flex w-5/6 gap-2'>
 					<label
 						className={`flex justify-center items-center bg-slate-300 px-5 text-gray-700 rounded-lg ${
-							!sendPublicKey ? 'opacity-75' : 'cursor-pointer'
+							!canStartEncryptDecrypt() ? 'opacity-75' : 'cursor-pointer'
 						}`}
 					>
 						<input
 							type='file'
 							className='hidden'
 							onChange={handleUploadFile}
-							disabled={!sendPublicKey}
+							disabled={!canStartEncryptDecrypt()}
 						/>
 						<b>Upload File</b>
 					</label>
@@ -212,11 +221,11 @@ const ChatWindow = ({ name, state, dispatch }) => {
 						className='flex-1 p-3 text-gray-950 text-lg rounded-lg'
 						onChange={(e) => setInput(e.target.value)}
 						value={input}
-						disabled={!sendPublicKey}
+						disabled={!canStartEncryptDecrypt()}
 					/>
 					<button
 						className='flex justify-center items-center gap-2 bg-slate-300 px-5 text-gray-700 rounded-lg enabled:hover:bg-slate-400 transition disabled:opacity-75'
-						disabled={!sendPublicKey}
+						disabled={!canStartEncryptDecrypt()}
 						onClick={handleSend}
 					>
 						<b>Send</b> <IoSend className='inline' />
